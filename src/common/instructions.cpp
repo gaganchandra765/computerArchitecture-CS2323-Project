@@ -94,6 +94,7 @@ std::unordered_map<std::string, Instruction> instruction_string_map = {
     {"lbu", Instruction::klbu},
     {"lhu", Instruction::klhu},
     {"lwu", Instruction::klwu},
+    {"lwpd", Instruction::klwpd},
 
     {"sb", Instruction::ksb},
     {"sh", Instruction::ksh},
@@ -220,7 +221,7 @@ static const std::unordered_set<std::string> valid_instructions = {
     "addw", "subw", "sllw", "srlw", "sraw",
     "addi", "xori", "ori", "andi", "slli", "srli", "srai", "slti", "sltiu",
     "addiw", "slliw", "srliw", "sraiw",
-    "lb", "lh", "lw", "ld", "lbu", "lhu", "lwu",
+    "lb", "lh", "lw", "ld", "lbu", "lhu", "lwu","lwpd",
     "sb", "sh", "sw", "sd",
     "beq", "bne", "blt", "bge", "bltu", "bgeu",
     "lui", "auipc",
@@ -281,14 +282,14 @@ static const std::unordered_set<std::string> RTypeInstructions = {
 static const std::unordered_set<std::string> ITypeInstructions = {
     "addi", "xori", "ori", "andi", "slli", "srli", "srai", "slti", "sltiu",
     "addiw", "slliw", "srliw", "sraiw",
-    "lb", "lh", "lw", "ld", "lbu", "lhu", "lwu",
+    "lb", "lh", "lw", "ld", "lbu", "lhu", "lwu","lwpd",
     "jalr"
 };
 
 static const std::unordered_set<std::string> I1TypeInstructions = {
     "addi", "xori", "ori", "andi", "sltiu", "slti",
     "addiw",
-    "lb", "lh", "lw", "ld", "lbu", "lhu", "lwu",
+    "lb", "lh", "lw", "ld", "lbu", "lhu", "lwu","lwpd",
     "jalr"
 };
 
@@ -330,7 +331,7 @@ static const std::unordered_set<std::string> BaseExtensionInstructions = {
     "addw", "subw", "sllw", "srlw", "sraw",
     "addi", "xori", "ori", "andi", "slli", "srli", "srai", "slti", "sltiu",
     "addiw", "slliw", "srliw", "sraiw",
-    "lb", "lh", "lw", "ld", "lbu", "lhu", "lwu",
+    "lb", "lh", "lw", "ld", "lbu", "lhu", "lwu","lwpd",
     "sb", "sh", "sw", "sd",
     "beq", "bne", "blt", "bge", "bltu", "bgeu",
     "lui", "auipc",
@@ -489,6 +490,7 @@ std::unordered_map<std::string, I1TypeInstructionEncoding> I1_type_instruction_e
     {"lbu", {0b0000011, 0b100}}, // O_GPR_C_I_LP_GPR_RP,
     {"lhu", {0b0000011, 0b101}}, // O_GPR_C_I_LP_GPR_RP,
     {"lwu", {0b0000011, 0b110}}, // O_GPR_C_I_LP_GPR_RP,
+    {"lwpd", {0b0000011, 0b111}}, // O_GPR_C_I_LP_GPR_RP, O_GPR_C_DL
 
     {"jalr", {0b1100111, 0b000}}, // O_GR_C_I, O_GPR_C_IL
 };
@@ -734,6 +736,7 @@ std::unordered_map<std::string, std::vector<SyntaxType>> instruction_syntax_map 
     {"lbu", {SyntaxType::O_GPR_C_I_LP_GPR_RP}},
     {"lhu", {SyntaxType::O_GPR_C_I_LP_GPR_RP}},
     {"lwu", {SyntaxType::O_GPR_C_I_LP_GPR_RP}},
+    {"lwpd", {SyntaxType::O_GPR_C_I_LP_GPR_RP, SyntaxType::O_GPR_C_DL}},
 
     {"sb", {SyntaxType::O_GPR_C_I_LP_GPR_RP}},
     {"sh", {SyntaxType::O_GPR_C_I_LP_GPR_RP}},

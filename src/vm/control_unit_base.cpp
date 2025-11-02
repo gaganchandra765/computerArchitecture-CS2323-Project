@@ -35,3 +35,7 @@ uint8_t ControlUnit::GetAluOp() const {
 bool ControlUnit::GetBranch() const {
   return branch_;
 }
+
+bool ControlUnit::IsLoadProtected() const{
+  return is_load_protected_;
+}

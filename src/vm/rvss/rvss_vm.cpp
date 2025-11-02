@@ -5,6 +5,7 @@
  */
 
 #include "vm/rvss/rvss_vm.h"
+#include "ecc/ecc_utils.h"
 
 #include "utils.h"
 #include "globals.h"
@@ -689,8 +690,16 @@ void RVSSVM::WriteBack() {
         registers_.WriteGpr(rd, execution_result_);
         break;
       }
-      case get_instr_encoding(Instruction::kLoadType).opcode: /* Load */ { 
-        registers_.WriteGpr(rd, memory_result_);
+      case get_instr_encoding(Instruction::kLoadType).opcode: /* Load */ {  
+        if(control_unit_.IsLoadProtected()){
+          uint32_t data_from_mem = static_cast<uint32_t>(memory_result_ & 0xFFFFFFFF);
+
+          uint64_t protected_value = ecc::compute_ecc(data_from_mem);
+          registers_.WriteGpr(rd, protected_value);
+        }
+        else{      
+          registers_.WriteGpr(rd, memory_result_);
+        }
         break;
       }
       case get_instr_encoding(Instruction::kjalr).opcode: /* JALR */

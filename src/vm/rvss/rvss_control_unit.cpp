@@ -15,12 +15,13 @@ using instruction_set::get_instr_encoding;
 
 
 
-
 void RVSSControlUnit::SetControlSignals(uint32_t instruction) {
   uint8_t opcode = instruction & 0b1111111;
+  uint8_t funct3 = (instruction >> 12)&0b111;
 
   alu_src_ = mem_to_reg_ = reg_write_ = mem_read_ = mem_write_ = branch_ = false;
   alu_op_ = false;
+  is_load_protected_ = false;
 
   switch (opcode) {
     case 0b0110011: /* R-type (kAdd, kSub, kAnd, kOr, kXor, kSll, kSrl, etc.) */ {
@@ -36,6 +37,9 @@ void RVSSControlUnit::SetControlSignals(uint32_t instruction) {
       mem_to_reg_ = true;
       reg_write_ = true;
       mem_read_ = true;
+      if(funct3==0b111){
+        is_load_protected_ = true;
+      }
       break;
     }
     case 0b0100011: {// Store instructions (SB, SH, SW, SD)

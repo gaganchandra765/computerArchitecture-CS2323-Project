@@ -64,7 +64,8 @@ enum Instruction {
   ksraiw,
   klb, 
   klh, 
-  klw, 
+  klw,
+  klwpd,
   kld, 
   klbu, 
   klhu, 
@@ -339,6 +340,7 @@ inline constexpr std::array<InstructionEncoding, static_cast<size_t>(Instruction
   InstructionEncoding(Instruction::klbu,        0b0000011, -1, 0b100, -1, -1, -1), // klbu
   InstructionEncoding(Instruction::klhu,        0b0000011, -1, 0b101, -1, -1, -1), // klhu
   InstructionEncoding(Instruction::klwu,        0b0000011, -1, 0b110, -1, -1, -1), // klwu
+  InstructionEncoding(Instruction::klwpd,       0b0000011, -1, 0b111, -1, -1, -1), // klwpd
 
   InstructionEncoding(Instruction::kjalr,       0b1100111, -1, 0b000, -1, -1, -1), // kjalr
 
