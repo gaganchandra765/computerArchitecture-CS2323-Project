@@ -37,7 +37,7 @@ std::unordered_map<std::string, Instruction> instruction_string_map = {
     {"fsub_bf16",Instruction::kfsub_bf16},
     {"fmul_bf16",Instruction::kfmul_bf16},
     {"fdiv_bf16",Instruction::kfdiv_bf16},
-    
+    {"injectFlip",Instruction::kinjectFlip},
     {"SIMD_add16",Instruction::kSIMD_add16},
     {"SIMD_sub16",Instruction::kSIMD_sub16},
     {"SIMD_mul16",Instruction::kSIMD_mul16},
@@ -228,7 +228,7 @@ static const std::unordered_set<std::string> valid_instructions = {
     "jal", "jalr",
     "ecall","SIMD_add32","SIMD_sub32","SIMD_mul32","SIMD_load32","SIMD_div32","SIMD_rem32",
     "fadd_bf16","fsub_bf16","fmul_bf16","fdiv_bf16","vdotp_bf16","SIMD_add16","SIMD_sub16",
-    "SIMDF_add32","SIMDF_sub32","SIMDF_mul32","SIMDF_div32","SIMDF_rem32","SIMDF_ld32", // newly added instructions 
+    "SIMDF_add32","SIMDF_sub32","SIMDF_mul32","SIMDF_div32","SIMDF_rem32","SIMDF_ld32","injectFlip", // newly added instructions 
     "fadd_bf16","fsub_bf16","fmul_bf16","fdiv_bf16","vdotp_bf16","SIMD_add16","SIMD_sub16","SIMD_mul16","SIMD_div16","SIMD_rem16","SIMD_load16_upper","SIMD_load16_lower", // newly added instructions 
 
     "csrrw", "csrrs", "csrrc", "csrrwi", "csrrsi", "csrrci",
@@ -269,7 +269,7 @@ static const std::unordered_set<std::string> RTypeInstructions = {
     "add", "sub", "and", "or", "xor", "sll", "srl", "sra", "slt", "sltu",
 
     // RV64
-    "addw", "subw", "sllw", "srlw", "sraw","SIMD_add32","SIMD_sub32","SIMD_mul32","SIMD_load32","SIMD_div32","SIMD_rem32","SIMD_add16","SIMD_sub16","SIMD_mul16","SIMD_div16","SIMD_rem16","SIMD_load16_upper","SIMD_load16_lower", 
+    "addw", "subw", "sllw", "srlw", "sraw","SIMD_add32","SIMD_sub32","SIMD_mul32","SIMD_load32","SIMD_div32","SIMD_rem32","SIMD_add16","SIMD_sub16","SIMD_mul16","SIMD_div16","SIMD_rem16","SIMD_load16_upper","SIMD_load16_lower", "injectFlip"
 
     // M Extension
     "mul", "mulh", "mulhsu", "mulhu", "div", "divu", "rem", "remu",
@@ -431,7 +431,7 @@ std::unordered_map<std::string, RTypeInstructionEncoding> R_type_instruction_enc
     {"SIMD_mul32",{0b0110011, 0b011, 0b0001011}},
     {"SIMD_div32",{0b0110011, 0b100, 0b0001011}},
     {"SIMD_rem32",{0b0110011, 0b101, 0b0001011}},
-    
+    {"injectFlip",{0b0110011, 0b000, 0b0011111}},
     {"SIMD_add16",{0b0110011, 0b010, 0b0001011}},
     {"SIMD_sub16",{0b0110011, 0b110, 0b0001011}},
     
@@ -710,7 +710,7 @@ std::unordered_map<std::string, std::vector<SyntaxType>> instruction_syntax_map 
     {"SIMD_load32", {SyntaxType::O_GPR_C_GPR_C_GPR}},
     {"SIMD_div32", {SyntaxType::O_GPR_C_GPR_C_GPR}},
     {"SIMD_rem32", {SyntaxType::O_GPR_C_GPR_C_GPR}},
-    
+    {"injectFlip", {SyntaxType::O_GPR_C_GPR_C_GPR}},
     {"SIMD_add16", {SyntaxType::O_GPR_C_GPR_C_GPR}},
     {"SIMD_sub16", {SyntaxType::O_GPR_C_GPR_C_GPR}},
     {"SIMD_mul16", {SyntaxType::O_GPR_C_GPR_C_GPR}},
@@ -718,7 +718,6 @@ std::unordered_map<std::string, std::vector<SyntaxType>> instruction_syntax_map 
     {"SIMD_rem16", {SyntaxType::O_GPR_C_GPR_C_GPR}},
     {"SIMD_load16_upper", {SyntaxType::O_GPR_C_GPR_C_GPR}},
     {"SIMD_load16_lower", {SyntaxType::O_GPR_C_GPR_C_GPR}},
-    
     {"addi", {SyntaxType::O_GPR_C_GPR_C_I}},
     {"xori", {SyntaxType::O_GPR_C_GPR_C_I}},
     {"ori", {SyntaxType::O_GPR_C_GPR_C_I}},

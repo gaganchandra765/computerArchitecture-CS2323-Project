@@ -162,6 +162,11 @@ alu::AluOp RVSSControlUnit::GetAluSignal(uint32_t instruction, bool ALUOp) {
                 break;
 
             }
+            case 0b0011111: {
+                return alu::AluOp::kInjectFlip;
+                break;
+
+            }
             }
             break;
         }
@@ -871,6 +876,3 @@ alu::AluOp RVSSControlUnit::GetAluSignal(uint32_t instruction, bool ALUOp) {
     
     return alu::AluOp::kNone;
 }
-
-
-

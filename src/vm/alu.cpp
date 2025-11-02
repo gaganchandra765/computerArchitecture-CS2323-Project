@@ -3,7 +3,8 @@
  * Author: Vishank Singh
  * Github: https://github.com/VishankSingh
  */
-
+#include <random>
+#include <bitset>
 #include "vm/alu.h"
 #include "fp_utils/bfloat16.h"
 #include <cfenv>
@@ -51,6 +52,32 @@ static std::string decode_fclass(uint16_t res) {
       bool overflow = __builtin_add_overflow(sa, sb, &result);
       return {static_cast<uint64_t>(result), overflow};
     }
+    case AluOp::kInjectFlip: {
+    // a = x2 (source and destination), b = x0 (ignored)
+    int32_t value = static_cast<int32_t>(a);  // Extract lower 32 bits as signed int
+
+    // Seed with random device + time for true randomness 🌱
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    
+    // Probability: 1 in 10,000 → p = 0.0001
+    std::bernoulli_distribution flip_happens(0.0001);
+    
+    bool did_flip = false;
+
+    if (flip_happens(gen)) {
+      // Choose random bit position: 0 to 31
+      std::uniform_int_distribution<int> bit_pos(0, 31);
+      int pos = bit_pos(gen);
+
+      // FLIP THAT BIT! 🎭
+      value ^= (1 << pos);
+      did_flip = true;
+    }
+
+    // Return new value in x2 (zero-extended to 64-bit), and whether flip occurred
+    return {static_cast<uint64_t>(static_cast<uint32_t>(value)), did_flip};
+  }
     case AluOp::kAddw: {
       auto sa = static_cast<int32_t>(a);
       auto sb = static_cast<int32_t>(b);
