@@ -269,7 +269,7 @@ static const std::unordered_set<std::string> RTypeInstructions = {
     "add", "sub", "and", "or", "xor", "sll", "srl", "sra", "slt", "sltu",
 
     // RV64
-    "addw", "subw", "sllw", "srlw", "sraw","SIMD_add32","SIMD_sub32","SIMD_mul32","SIMD_load32","SIMD_div32","SIMD_rem32","SIMD_add16","SIMD_sub16","SIMD_mul16","SIMD_div16","SIMD_rem16","SIMD_load16_upper","SIMD_load16_lower", "injectFlip"
+    "addw", "subw", "sllw", "srlw", "sraw","SIMD_add32","SIMD_sub32","SIMD_mul32","SIMD_load32","SIMD_div32","SIMD_rem32","SIMD_add16","SIMD_sub16","SIMD_mul16","SIMD_div16","SIMD_rem16","SIMD_load16_upper","SIMD_load16_lower", "injectFlip",
 
     // M Extension
     "mul", "mulh", "mulhsu", "mulhu", "div", "divu", "rem", "remu",
