@@ -896,11 +896,14 @@ void RVSSVM::WriteBackCsr() {
 void RVSSVM::Run() {
   ClearStop();
   uint64_t instruction_executed = 0;
-  bool debug_mode = false;
 
   while (!stop_requested_ && program_counter_ < program_size_) {
-    if (instruction_executed > vm_config::config.getInstructionExecutionLimit())
+    if (instruction_executed > vm_config::config.getInstructionExecutionLimit()){
+      std::cout << "Execution stopped — limit " 
+              << vm_config::config.getInstructionExecutionLimit()
+              << " reached after " << instruction_executed << " instructions.\n";
       break;
+    }
 
     Fetch();
     Decode();
@@ -910,9 +913,8 @@ void RVSSVM::Run() {
     instructions_retired_++;
     instruction_executed++;
     cycle_s_++;
-    if(debug_mode){
-      std::cout << "Program Counter: " << program_counter_ << std::endl;
-    }
+    // std::cout << "Program Counter: " << program_counter_ << std::endl;
+    
     // if (registers_.ReadGpr(4) == 0) { // assuming x4 = register index 4
     //   std::cout << "VM_STOP_X4_ZERO" << std::endl;
     //   break;
@@ -931,8 +933,9 @@ void RVSSVM::DebugRun() {
   ClearStop();
   uint64_t instruction_executed = 0;
   while (!stop_requested_ && program_counter_ < program_size_) {
-    // if (instruction_executed > vm_config::config.getInstructionExecutionLimit())
-    //   break;
+    if (instruction_executed > vm_config::config.getInstructionExecutionLimit()){
+      break;
+    }
     current_delta_.old_pc = program_counter_;
     if (std::find(breakpoints_.begin(), breakpoints_.end(), program_counter_) == breakpoints_.end()) {
       Fetch();
