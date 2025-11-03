@@ -56,4 +56,64 @@ namespace ecc{
 
 
     }
+    
+    uint64_t checkError(uint64_t encoded) {
+    // Extract data and received ECC
+    uint32_t data = static_cast<uint32_t>(encoded & 0xFFFFFFFFULL);
+    uint32_t ecc_received = static_cast<uint32_t>((encoded >> 32) & 0x7F); // 7 bits
+
+    uint8_t p_received[6];
+    uint8_t p_all_received = (ecc_received >> 6) & 1;
+    for (int i = 0; i < 6; ++i) {
+        p_received[i] = (ecc_received >> i) & 1;
+    }
+
+    // Recompute parity bits from received data
+    uint8_t p_computed[6] = {0};
+    for (int i = 0; i < 32; ++i) {
+        uint8_t bit = (data >> i) & 1;
+        uint32_t pos = i + 1;
+        if (pos & 1)  p_computed[0] ^= bit;
+        if (pos & 2)  p_computed[1] ^= bit;
+        if (pos & 4)  p_computed[2] ^= bit;
+        if (pos & 8)  p_computed[3] ^= bit;
+        if (pos & 16) p_computed[4] ^= bit;
+        if (pos & 32) p_computed[5] ^= bit;
+    }
+
+    // Syndrome
+    uint8_t syndrome = 0;
+    for (int i = 0; i < 6; ++i) {
+        if (p_computed[i] != p_received[i]) {
+            syndrome |= (1 << i);
+        }
+    }
+
+    // Overall parity
+    uint8_t data_parity = __builtin_parityl(data);
+    uint8_t hamming_parity = __builtin_parity(ecc_received & 0x3F);
+    uint8_t p_all_computed = data_parity ^ hamming_parity;
+    bool parity_mismatch = (p_all_computed != p_all_received);
+
+    bool corrected = false;
+
+    // SINGLE BIT ERROR IN DATA?
+    if (syndrome != 0 && parity_mismatch) {
+        int error_pos = syndrome;
+        if (error_pos >= 1 && error_pos <= 32) {
+            data ^= (1U << (error_pos - 1));
+            corrected = true;
+        }
+    }
+
+    // RECOMPUTE FRESH ECC
+    uint64_t fresh_ecc = ecc::compute_ecc(data);
+
+    // FIXED: Parentheses around (fresh_ecc & 0x7F)
+    uint64_t result = ((fresh_ecc & 0x7FULL) << 32) | static_cast<uint64_t>(data);
+
+    return result;
 }
+
+}
+

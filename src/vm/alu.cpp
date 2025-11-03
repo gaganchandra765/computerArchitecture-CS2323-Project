@@ -3,6 +3,8 @@
  * Author: Vishank Singh
  * Github: https://github.com/VishankSingh
  */
+ 
+#include "ecc/ecc_utils.h"
 #include <random>
 #include <bitset>
 #include "vm/alu.h"
@@ -78,6 +80,22 @@ static std::string decode_fclass(uint16_t res) {
     // Return new value in x2 (zero-extended to 64-bit), and whether flip occurred
     return {static_cast<uint64_t>(static_cast<uint32_t>(value)), did_flip};
   }
+    case AluOp::kCheckError: {
+      uint64_t encoded = a;
+
+    // Use your ECC library! 
+      uint64_t corrected_encoded = ecc::checkError(encoded);
+
+      // Did we fix a single-bit error?
+      // We'll detect by comparing original vs corrected data
+      uint32_t orig_data = static_cast<uint32_t>(encoded);
+      uint32_t corr_data = static_cast<uint32_t>(corrected_encoded);
+      bool was_corrected = (orig_data != corr_data);
+
+      // Return: { clean 64-bit value with fresh ECC, did_we_fix_something? }
+      return { corrected_encoded, was_corrected };
+    }
+  
     case AluOp::kAddw: {
       auto sa = static_cast<int32_t>(a);
       auto sb = static_cast<int32_t>(b);

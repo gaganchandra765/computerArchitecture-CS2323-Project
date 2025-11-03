@@ -135,7 +135,7 @@ enum Instruction {
   kremw, 
   kremuw,
   kinjectFlip,
-  //kcheckError,
+  kcheckError,
   kflw, 
   kfsw, 
   kfmadd_s, 
@@ -304,7 +304,7 @@ inline constexpr std::array<InstructionEncoding, static_cast<size_t>(Instruction
   InstructionEncoding(Instruction::kremu,       0b0110011, -1, 0b111, -1, -1, 0b0000001), // kremu
   // adding new instructions - injectFlip and checkError, with funct7 as 0b0011111 - R Type
   InstructionEncoding(Instruction::kinjectFlip,        0b0110011, -1, 0b000, -1, -1, 0b0011111),
-  //InstructionEncoding(Instruction::kcheckError,        0b0110011, -1, 0b001, -1, -1, 0b0011111),
+  InstructionEncoding(Instruction::kcheckError,        0b0110011, -1, 0b001, -1, -1, 0b0011111),
   //
   
 
