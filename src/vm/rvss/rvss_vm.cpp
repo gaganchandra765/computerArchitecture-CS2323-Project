@@ -697,17 +697,17 @@ void RVSSVM::WriteBack() {
       }
       case get_instr_encoding(Instruction::kLoadType).opcode: /* Load */ {  
         if(control_unit_.IsLoadProtected()){
-          std::cout << "entered the block\n";
-          std::cout << "mem_result:" << memory_result_ << "\n";
+          // std::cout << "entered the block\n";
+          // std::cout << "mem_result:" << memory_result_ << "\n";
           uint32_t data_from_mem = static_cast<uint32_t>(memory_result_ & 0xFFFFFFFF);
 
           uint64_t protected_value = ecc::compute_ecc(data_from_mem);
-          std::cout << "data:"<<protected_value << "\n";
+          // std::cout << "data:"<<protected_value << "\n";
           registers_.WriteGpr(rd, protected_value);
         }
         else{      
-          std::cout << "actual load :\n";
-          std::cout << memory_result_ << "\n";
+          // std::cout << "actual load :\n";
+          // std::cout << memory_result_ << "\n";
           registers_.WriteGpr(rd, memory_result_);
         }
         break;

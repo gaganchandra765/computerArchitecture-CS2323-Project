@@ -5,7 +5,7 @@
 
 namespace ecc{
     uint64_t compute_ecc(uint32_t data){
-        std::cout << data << "\n";
+        // std::cout << data << "\n";
         uint8_t p[6]={0};
         uint8_t p_all = 0;
 
