@@ -1,9 +1,11 @@
 #include "ecc/ecc_utils.h"
 
 #include <cstring>
+#include <iostream>
 
 namespace ecc{
     uint64_t compute_ecc(uint32_t data){
+        std::cout << data << "\n";
         uint8_t p[6]={0};
         uint8_t p_all = 0;
 
@@ -58,7 +60,7 @@ namespace ecc{
     }
     
     uint64_t checkError(uint64_t encoded) {
-    // Extract data and received ECC
+    // extract data and intial ECC
     uint32_t data = static_cast<uint32_t>(encoded & 0xFFFFFFFFULL);
     uint32_t ecc_received = static_cast<uint32_t>((encoded >> 32) & 0x7F); // 7 bits
 
@@ -68,7 +70,7 @@ namespace ecc{
         p_received[i] = (ecc_received >> i) & 1;
     }
 
-    // Recompute parity bits from received data
+    // compute again parity bits from received data
     uint8_t p_computed[6] = {0};
     for (int i = 0; i < 32; ++i) {
         uint8_t bit = (data >> i) & 1;
@@ -81,36 +83,35 @@ namespace ecc{
         if (pos & 32) p_computed[5] ^= bit;
     }
 
-    // Syndrome
     uint8_t syndrome = 0;
     for (int i = 0; i < 6; ++i) {
         if (p_computed[i] != p_received[i]) {
             syndrome |= (1 << i);
-        }
+    }
     }
 
-    // Overall parity
+    // overall parity
     uint8_t data_parity = __builtin_parityl(data);
     uint8_t hamming_parity = __builtin_parity(ecc_received & 0x3F);
     uint8_t p_all_computed = data_parity ^ hamming_parity;
     bool parity_mismatch = (p_all_computed != p_all_received);
 
-    bool corrected = false;
+    // bool corrected = false;
 
-    // SINGLE BIT ERROR IN DATA?
+    // if single error 
     if (syndrome != 0 && parity_mismatch) {
         int error_pos = syndrome;
         if (error_pos >= 1 && error_pos <= 32) {
             data ^= (1U << (error_pos - 1));
-            corrected = true;
-        }
+            // corrected = true;
+    }
     }
 
-    // RECOMPUTE FRESH ECC
+    //recompute the fresh ecc bits
     uint64_t fresh_ecc = ecc::compute_ecc(data);
 
-    // FIXED: Parentheses around (fresh_ecc & 0x7F)
-    uint64_t result = ((fresh_ecc & 0x7FULL) << 32) | static_cast<uint64_t>(data);
+    uint64_t ecc_bits = static_cast<uint32_t>((fresh_ecc >> 32) & 0x7FULL);
+    uint64_t result = (static_cast<uint64_t>(ecc_bits) << 32) | static_cast<uint64_t>(data);
 
     return result;
 }

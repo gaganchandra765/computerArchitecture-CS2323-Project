@@ -58,7 +58,6 @@ static std::string decode_fclass(uint16_t res) {
     // a = x2 (source and destination), b = x0 (ignored)
     uint64_t value = a;  // Extract lower 32 bits as signed int
 
-    // Seed with random device + time for true randomness 🌱
     static std::random_device rd;
     static std::mt19937 gen(rd());
     
@@ -72,7 +71,6 @@ static std::string decode_fclass(uint16_t res) {
       std::uniform_int_distribution<int> bit_pos(0, 31);
       int pos = bit_pos(gen);
 
-      // FLIP THAT BIT! 🎭
       value ^= (1ULL << pos);
       did_flip = true;
     }

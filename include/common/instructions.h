@@ -314,7 +314,6 @@ inline constexpr std::array<InstructionEncoding, static_cast<size_t>(Instruction
   InstructionEncoding(Instruction::ksllw,       0b0111011, -1, 0b001, -1, -1, 0b0000000), // ksllw
   InstructionEncoding(Instruction::ksrlw,       0b0111011, -1, 0b101, -1, -1, 0b0000000), // ksrlw
   InstructionEncoding(Instruction::ksraw,       0b0111011, -1, 0b101, -1, -1, 0b0100000), // ksraw
-  
   InstructionEncoding(Instruction::kmulw,       0b0111011, -1, 0b000, -1, -1, 0b0000001), // kmulw
   InstructionEncoding(Instruction::kdivw,       0b0111011, -1, 0b100, -1, -1, 0b0000001), // kdivw
   InstructionEncoding(Instruction::kdivuw,      0b0111011, -1, 0b101, -1, -1, 0b0000001), // kdivuw
