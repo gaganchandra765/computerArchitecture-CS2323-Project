@@ -79,18 +79,13 @@ static std::string decode_fclass(uint16_t res) {
     return {value, did_flip};
   }
     case AluOp::kCheckError: {
-      uint64_t encoded = a;
+      uint64_t input_val = a;
 
-    // Use your ECC library! 
-      uint64_t corrected_encoded = ecc::checkError(encoded);
 
-      // Did we fix a single-bit error?
-      // We'll detect by comparing original vs corrected data
-      uint32_t orig_data = static_cast<uint32_t>(encoded);
-      uint32_t corr_data = static_cast<uint32_t>(corrected_encoded);
-      bool was_corrected = (orig_data != corr_data);
+      uint64_t corrected_encoded = ecc::adaptive_check_error(input_val);
 
-      // Return: { clean 64-bit value with fresh ECC, did_we_fix_something? }
+
+      bool was_corrected = (input_val&ecc::DATA_ECC_MASK)!=(corrected_encoded&ecc::DATA_ECC_MASK);
       return { corrected_encoded, was_corrected };
     }
   

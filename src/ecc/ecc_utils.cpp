@@ -65,26 +65,26 @@ namespace ecc{
     uint32_t ecc_received = static_cast<uint32_t>((encoded >> 32) & 0x7F); // 7 bits
 
     uint8_t p_received[6];
-    uint8_t p_all_received = (ecc_received >> 6) & 1;
-    for (int i = 0; i < 6; ++i) {
+    uint8_t p_all_received = (ecc_received >> 6) &1;
+    for (int i = 0; i < 6; ++i){
         p_received[i] = (ecc_received >> i) & 1;
     }
 
     // compute again parity bits from received data
     uint8_t p_computed[6] = {0};
-    for (int i = 0; i < 32; ++i) {
-        uint8_t bit = (data >> i) & 1;
-        uint32_t pos = i + 1;
-        if (pos & 1)  p_computed[0] ^= bit;
-        if (pos & 2)  p_computed[1] ^= bit;
-        if (pos & 4)  p_computed[2] ^= bit;
+    for (int i = 0; i < 32; ++i){
+        uint8_t bit = (data>> i)& 1;
+        uint32_t pos = i +1;
+        if (pos & 1) p_computed[0] ^= bit;
+        if (pos & 2) p_computed[1] ^= bit;
+        if (pos & 4) p_computed[2] ^= bit;
         if (pos & 8)  p_computed[3] ^= bit;
         if (pos & 16) p_computed[4] ^= bit;
         if (pos & 32) p_computed[5] ^= bit;
     }
 
     uint8_t syndrome = 0;
-    for (int i = 0; i < 6; ++i) {
+    for (int i = 0; i < 6; ++i){
         if (p_computed[i] != p_received[i]) {
             syndrome |= (1 << i);
     }
@@ -98,23 +98,75 @@ namespace ecc{
 
     // bool corrected = false;
 
+    // no errors
+    if(syndrome==0&&!parity_mismatch){
+        return encoded;
+
+    }
+
+    if(syndrome==0&&parity_mismatch){
+        uint64_t new_ecc = ecc::compute_ecc(data);
+        return new_ecc;
+    }
     // if single error 
-    if (syndrome != 0 && parity_mismatch) {
+    if (syndrome != 0 && parity_mismatch){
         int error_pos = syndrome;
-        if (error_pos >= 1 && error_pos <= 32) {
-            data ^= (1U << (error_pos - 1));
+        if (error_pos >= 1 && error_pos <= 32){
+            data ^=(1U<<(error_pos - 1));
             // corrected = true;
     }
+        uint64_t newData = compute_ecc(data);
+        return newData;
+    }
+    else{
+        // more than 1 error, can not correct it 
     }
 
-    //recompute the fresh ecc bits
-    uint64_t fresh_ecc = ecc::compute_ecc(data);
-
-    uint64_t ecc_bits = static_cast<uint32_t>((fresh_ecc >> 32) & 0x7FULL);
-    uint64_t result = (static_cast<uint64_t>(ecc_bits) << 32) | static_cast<uint64_t>(data);
-
-    return result;
+    return encoded;
 }
+    uint64_t adaptive_check_error(uint64_t reg_val){
+        // uint64_t metadata_bits = reg_val & METADATA_MASK;
+        uint8_t mode = get_mode(reg_val);
+        uint8_t hist =get_hist(reg_val);
+        uint16_t freq = get_freq(reg_val);
+        uint8_t sens = get_sens(reg_val);
+
+
+        if(freq<1023){
+            freq+=1;
+        }
+
+        uint64_t processed_val = reg_val;
+
+        if(mode!=MODE_NONE){
+            processed_val = checkError(reg_val);
+
+            if((processed_val&DATA_ECC_MASK)!=(reg_val&DATA_ECC_MASK)){
+                if(hist<3){
+                    hist+=1;
+                }
+            }
+
+        }
+
+        bool high_usage =(freq>700);
+        bool high_sensitivity = (sens>=4);
+        bool recent_errors =(hist>=1);
+
+        if(high_usage||high_sensitivity||recent_errors){
+            mode = MODE_SECDED;
+        }
+        else if(freq>300){
+            mode = MODE_SEC;
+        }
+        else{
+            mode = MODE_SEC;
+        }
+
+        return update_metadata(processed_val,mode,hist,freq,sens);
+
+
+    }
 
 }
 

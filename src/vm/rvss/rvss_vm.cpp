@@ -702,6 +702,13 @@ void RVSSVM::WriteBack() {
           uint32_t data_from_mem = static_cast<uint32_t>(memory_result_ & 0xFFFFFFFF);
 
           uint64_t protected_value = ecc::compute_ecc(data_from_mem);
+
+          uint64_t init_mode =ecc::MODE_SEC;
+          uint8_t init_hist = 0;
+          uint8_t init_freq = 0;
+          uint8_t init_sens = 1; // low sensitivity
+
+          protected_value = ecc::update_metadata(protected_value,init_mode,init_hist,init_freq,init_sens);
           // std::cout << "data:"<<protected_value << "\n";
           registers_.WriteGpr(rd, protected_value);
         }
