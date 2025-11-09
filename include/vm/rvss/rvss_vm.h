@@ -100,6 +100,11 @@ class RVSSVM : public VmBase {
  public:
   RVSSControlUnit control_unit_;
   std::atomic<bool> stop_requested_ = false;
+  // newly added functions for audio processing
+  std::vector<int32_t> audio_samples_;
+  size_t audio_sample_index_ = 0;
+  void LoadAudioFile(const std::string& wav_path);
+  // end of audio functions
 
 
   std::stack<StepDelta> undo_stack_;

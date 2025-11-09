@@ -23,6 +23,7 @@
 #include <condition_variable>
 #include <queue>
 #include <atomic>
+#include <fstream>
 
 using instruction_set::Instruction;
 using instruction_set::get_instr_encoding;
@@ -31,6 +32,20 @@ using instruction_set::get_instr_encoding;
 RVSSVM::RVSSVM() : VmBase() {
   DumpRegisters(globals::registers_dump_file_path, registers_);
   DumpState(globals::vm_state_dump_file_path);
+
+  std::ifstream audio_file("audio_data.txt");
+  std::string line;
+  if(audio_file.is_open()){
+    while(std::getline(audio_file,line)){
+      audio_samples_.push_back(std::stoi(line));
+    }
+    audio_file.close();
+    std::cout << "VM: Loaded "<< audio_samples_.size() << " audio samples\n";
+  }
+  else{
+    std::cerr << "VM warning could not open audio_data.txt\n";
+  }
+
 }
 
 RVSSVM::~RVSSVM() = default;
@@ -534,7 +549,22 @@ void RVSSVM::WriteMemory() {
         break;
       }
       case 0b111: {//LWPD
-        memory_result_ = memory_controller_.ReadDoubleWord(execution_result_);
+        uint64_t load_address = execution_result_;
+        const uint64_t AUDIO_INPUT_ADDRESS = 0x30000000;
+        if(load_address==AUDIO_INPUT_ADDRESS){
+          int32_t sample =0;
+          if(audio_sample_index_<audio_samples_.size()){
+            sample = audio_samples_[audio_sample_index_++];
+          }
+          else{
+            audio_sample_index_ = 0;
+          }
+
+          memory_result_ = static_cast<uint64_t>(sample);
+        }
+        else{
+          memory_result_ = memory_controller_.ReadDoubleWord(execution_result_);
+        }
         break;
 
       }
@@ -570,6 +600,15 @@ void RVSSVM::WriteMemory() {
       }
       case 0b010: {// SW
         addr = execution_result_;
+        if(addr == 0x10000000){
+          uint32_t audio_sample = static_cast<uint32_t>(registers_.ReadGpr(rs2)&0xFFFFFFFF);
+
+          std::ofstream audio_log("audio_out.log",std::ios::app);
+          if(audio_log.is_open()){
+            audio_log << audio_sample << "\n";
+          }
+          break;
+        }
         for (size_t i = 0; i < 4; ++i) {
           old_bytes_vec.push_back(memory_controller_.ReadByte(addr + i));
         }

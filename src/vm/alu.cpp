@@ -62,7 +62,7 @@ static std::string decode_fclass(uint16_t res) {
     static std::mt19937 gen(rd());
     
     // Probability: 1 in 10,000 → p = 0.0001
-    std::bernoulli_distribution flip_happens(0.000001);
+    std::bernoulli_distribution flip_happens(0.1);
     
     bool did_flip = false;
 
