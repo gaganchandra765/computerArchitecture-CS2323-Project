@@ -2,7 +2,7 @@
 import sys
 import numpy as np
 from scipy.io.wavfile import write
-
+# this is for actually creating the .wav file
 if len(sys.argv) != 2:
     print("Usage: python log_to_wav.py <input.log>")
     sys.exit(1)

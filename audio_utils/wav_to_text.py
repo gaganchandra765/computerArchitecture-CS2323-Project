@@ -1,4 +1,5 @@
 # Save as wav_to_txt.py
+# wav file to .txt file for easier file processing . and for testing using a .s file
 import wave, struct, sys
 samples = []
 with wave.open('test.wav', 'rb') as wav:
