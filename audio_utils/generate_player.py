@@ -3,6 +3,8 @@ import wave
 import sys
 import struct
 import os
+# this is for generating the actual player
+# have to check for edge cases for safety.
 
 def get_lui_addi_pair(value):
     if value == 0:
@@ -22,6 +24,8 @@ with open('audio_data.txt', 'r') as f:
 if n_samples == 0:
     print("Error: audio_data.txt is empty.")
     sys.exit(1)
+    
+    # different testing modes - we can hear the differnce in audio directly
 for mode in [0, 1, 2]: 
     if mode == 0:
         filename ="player_clean.s"
@@ -30,6 +34,7 @@ for mode in [0, 1, 2]:
     else:
         filename= "player_corrected.s"
 
+## writing into the .s testing file for our speciifc audio file and performing injectFlip and checkError for testing.
 
     (count_lui,count_addi) =get_lui_addi_pair(n_samples)
     with open(filename, 'w') as f:
@@ -37,7 +42,6 @@ for mode in [0, 1, 2]:
         f.write(f"  lui x6, {count_lui}\n")
         f.write(f"  addi x6, x6, {count_addi}\n")
         f.write("  lui x7, 0x10000\n")
-        
         f.write("  lui x8, 0x30000\n")
         f.write("loop:\n")
         f.write("  lwpd x10, 0(x8)\n") 
