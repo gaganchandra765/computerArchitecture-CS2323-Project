@@ -6,6 +6,22 @@ import os
 # this is for generating the actual player
 # have to check for edge cases for safety.
 
+# handle large immediate safely
+def write_addi_safe(f, dest, src, imm):
+    MIN_IMM, MAX_IMM = -2048, 2047
+    if MIN_IMM <= imm <= MAX_IMM:
+        f.write(f"  addi {dest}, {src}, {imm}\n")
+    else:
+        remaining = imm
+        while abs(remaining) > 2047:
+            step = 2047 if remaining > 0 else -2048
+            f.write(f"  addi {dest}, {src}, {step}\n")
+            src = dest
+            remaining -= step
+        if remaining != 0:
+            f.write(f"  addi {dest}, {src}, {remaining}\n")
+
+
 def get_lui_addi_pair(value):
     if value == 0:
         return (0, 0)
@@ -40,7 +56,7 @@ for mode in [0, 1, 2]:
     with open(filename, 'w') as f:
         f.write("main:\n")
         f.write(f"  lui x6, {count_lui}\n")
-        f.write(f"  addi x6, x6, {count_addi}\n")
+        write_addi_safe(f, "x6", "x6", count_addi)
         f.write("  lui x7, 0x10000\n")
         f.write("  lui x8, 0x30000\n")
         f.write("loop:\n")

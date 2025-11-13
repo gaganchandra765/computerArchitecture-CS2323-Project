@@ -70,7 +70,7 @@ bool Parser::parse_O_GPR_C_CSR_C_I() {
     block.setRd(reg);
     uint32_t csr_value = csr_to_address.at(peekToken(3).value);
     block.setCsr(csr_value);
-    int64_t imm = std::stoll(peekToken(5).value);
+    int64_t imm = std::stoll(peekToken(5).value, nullptr, 0);
     if (0 <= imm && imm <= 31) {
       block.setImm(std::to_string(imm));
     } else {

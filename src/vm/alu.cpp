@@ -48,6 +48,15 @@ static std::string decode_fclass(uint16_t res) {
 [[nodiscard]] std::pair<uint64_t, bool> Alu::execute(AluOp op, uint64_t a, uint64_t b) {
   switch (op) {
     case AluOp::kAdd: {
+      auto sa = static_cast<int32_t>(a& 0xFFFFFFFFULL);
+      auto sb = static_cast<int32_t>(b& 0xFFFFFFFFULL);
+      int32_t result ;
+      bool overflow = __builtin_add_overflow(sa, sb, &result);
+      uint64_t protected_value = ecc::compute_ecc(result);
+      protected_value = ecc::update_metadata(protected_value,ecc::MODE_SEC,0,1,1);
+      return {protected_value, overflow};
+    }
+    case AluOp::kAddrAdd: {
       auto sa = static_cast<int64_t>(a);
       auto sb = static_cast<int64_t>(b);
       int64_t result = sa + sb;
@@ -97,11 +106,15 @@ static std::string decode_fclass(uint16_t res) {
       return {static_cast<uint64_t>(static_cast<int32_t>(result)), overflow};
     }
     case AluOp::kSub: {
-      auto sa = static_cast<int64_t>(a);
-      auto sb = static_cast<int64_t>(b);
-      int64_t result = sa - sb;
+      auto sa = static_cast<int32_t>(a&0xFFFFFFFFULL);
+      auto sb = static_cast<int32_t>(b&0xFFFFFFFFULL);
+      int32_t result;
       bool overflow = __builtin_sub_overflow(sa, sb, &result);
-      return {static_cast<uint64_t>(result), overflow};
+
+      uint64_t protected_value = ecc::compute_ecc(result);
+      protected_value = ecc::update_metadata(protected_value,ecc::MODE_SEC,0,1,1);
+      
+      return {protected_value, overflow};
     }
     case AluOp::kSubw: {
       auto sa = static_cast<int32_t>(a);
@@ -111,11 +124,18 @@ static std::string decode_fclass(uint16_t res) {
       return {static_cast<uint64_t>(static_cast<int32_t>(result)), overflow};
     }
     case AluOp::kMul: {
-      auto sa = static_cast<int64_t>(a);
-      auto sb = static_cast<int64_t>(b);
-      int64_t result = sa*sb;
-      bool overflow = __builtin_mul_overflow(sa, sb, &result);
-      return {static_cast<uint64_t>(result), overflow};
+      auto sa = static_cast<int32_t>(a& 0xFFFFFFFFULL);
+      auto sb = static_cast<int32_t>(b& 0xFFFFFFFFULL);
+      int32_t result = sa*sb;
+
+
+      int64_t full_result =static_cast<int64_t>(sa)*static_cast<int64_t>(sb);
+      bool overflow = (full_result!=static_cast<int64_t>(result));
+
+      uint64_t protected_value = ecc::compute_ecc(result);
+      protected_value = ecc::update_metadata(protected_value,ecc::MODE_SEC,0,1,1);
+
+      return {protected_value, overflow};
     }
     case AluOp::kMulh: {
       auto sa = static_cast<int64_t>(a);
@@ -373,16 +393,23 @@ static std::string decode_fclass(uint16_t res) {
       return {static_cast<uint64_t>(lower_result), overflow};
     }
     case AluOp::kDiv: {
-      auto sa = static_cast<int64_t>(a);
-      auto sb = static_cast<int64_t>(b);
+      auto sa = static_cast<int32_t>(a& 0xFFFFFFFFULL);
+      auto sb = static_cast<int32_t>(b& 0xFFFFFFFFULL);
+      int32_t result;
+      bool overflow = false;
       if (sb==0) {
-        return {0, false};
+        result = -1;
       }
-      if (sa==INT64_MIN && sb==-1) {
-        return {static_cast<uint64_t>(INT64_MAX), true};
+      else if (sa==INT32_MIN && sb==-1) {
+        result = INT32_MIN;
+        overflow = true;
       }
-      int64_t result = sa/sb;
-      return {static_cast<uint64_t>(result), false};
+      else{
+        result = sa/sb;
+      }
+      uint64_t protected_value = ecc::compute_ecc(result);
+      protected_value = ecc::update_metadata(protected_value,ecc::MODE_SEC,0,1,1);
+      return {protected_value, overflow};
     }
     case AluOp::kDivw: {
       auto sa = static_cast<int32_t>(a);

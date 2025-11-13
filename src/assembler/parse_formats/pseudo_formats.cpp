@@ -116,7 +116,7 @@ bool Parser::parse_pseudo() {
             (peekToken(4).type==TokenType::EOF_ || peekToken(4).line_number!=currentToken().line_number)) {
       ICUnit block;
       block.setOpcode(currentToken().value);
-      int64_t imm = std::stoll(peekToken(3).value);
+      int64_t imm = std::stoll(peekToken(3).value, nullptr, 0);
       std::string reg = reg_alias_to_name.at(peekToken(1).value);
       if (-2048 <= imm && imm <= 2047) {
         block.setLineNumber(currentToken().line_number);

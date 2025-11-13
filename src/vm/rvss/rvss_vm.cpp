@@ -103,7 +103,15 @@ void RVSSVM::Execute() {
   }
 
   alu::AluOp aluOperation = control_unit_.GetAluSignal(current_instruction_, control_unit_.GetAluOp());
-  std::tie(execution_result_, overflow) = alu_.execute(aluOperation, reg1_value, reg2_value);
+  bool is_addr_calc = control_unit_.GetMemWrite() || control_unit_.GetMemRead() ||(opcode==get_instr_encoding(Instruction::kjalr).opcode);
+
+  if(is_addr_calc&&aluOperation==alu::AluOp::kAdd){
+    std::tie(execution_result_, overflow) = alu_.execute(alu::AluOp::kAddrAdd, reg1_value, reg2_value);
+
+  }
+  else{
+    std::tie(execution_result_, overflow) = alu_.execute(aluOperation, reg1_value, reg2_value);
+  }
 
 
   if (control_unit_.GetBranch()) {
@@ -113,7 +121,8 @@ void RVSSVM::Execute() {
       UpdateProgramCounter(-4);
       return_address_ = program_counter_ + 4;
       if (opcode==get_instr_encoding(Instruction::kjalr).opcode) { 
-        UpdateProgramCounter(-program_counter_ + (execution_result_));
+        uint64_t target_addr = execution_result_ & 0xFFFFFFFFULL;
+        UpdateProgramCounter(-program_counter_ + (target_addr));
       } else if (opcode==get_instr_encoding(Instruction::kjal).opcode) {
         UpdateProgramCounter(imm);
       }
@@ -123,29 +132,30 @@ void RVSSVM::Execute() {
                opcode==get_instr_encoding(Instruction::kbge).opcode ||
                opcode==get_instr_encoding(Instruction::kbltu).opcode ||
                opcode==get_instr_encoding(Instruction::kbgeu).opcode) {
+      uint64_t data_result=execution_result_&0xFFFFFFFFULL;
       switch (funct3) {
         case 0b000: {// BEQ
-          branch_flag_ = (execution_result_==0);
+          branch_flag_ = (data_result==0);
           break;
         }
         case 0b001: {// BNE
-          branch_flag_ = (execution_result_!=0);
+          branch_flag_ = (data_result!=0);
           break;
         }
         case 0b100: {// BLT
-          branch_flag_ = (execution_result_==1);
+          branch_flag_ = (data_result==1);
           break;
         }
         case 0b101: {// BGE
-          branch_flag_ = (execution_result_==0);
+          branch_flag_ = (data_result==0);
           break;
         }
         case 0b110: {// BLTU
-          branch_flag_ = (execution_result_==1);
+          branch_flag_ = (data_result==1);
           break;
         }
         case 0b111: {// BGEU
-          branch_flag_ = (execution_result_==0);
+          branch_flag_ = (data_result==0);
           break;
         }
       }
@@ -600,6 +610,8 @@ void RVSSVM::WriteMemory() {
       }
       case 0b010: {// SW
         addr = execution_result_;
+        // std::cout << "DEBUG: SW instruction detected. Target Addr: 0x" 
+        //           << std::hex << addr << std::dec << std::endl;
         if(addr == 0x10000000){
           uint32_t audio_sample = static_cast<uint32_t>(registers_.ReadGpr(rs2)&0xFFFFFFFF);
 
@@ -1210,7 +1222,6 @@ void RVSSVM::Reset() {
   redo_stack_ = std::stack<StepDelta>();
 
 }
-
 
 
 

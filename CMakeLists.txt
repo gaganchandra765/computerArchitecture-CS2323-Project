@@ -85,3 +85,13 @@ if(DOXYGEN_FOUND)
 endif()
 
 message(STATUS "Done")
+
+add_custom_target(clean_logs
+    COMMAND ${CMAKE_COMMAND} -E echo "Removing generated logs, wavs, and extra files created"
+    COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_BINARY_DIR}/*.log
+    COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_BINARY_DIR}/*.wav
+    COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_BINARY_DIR}/audio_data.txt
+    COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_BINARY_DIR}/*.s
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    COMMENT "Cleaning extra generated files"
+)

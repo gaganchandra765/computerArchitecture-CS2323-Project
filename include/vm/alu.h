@@ -29,6 +29,7 @@ namespace alu {
 enum class AluOp {
     kNone, ///< No operation.
     kAdd, ///< Addition operation.
+    kAddrAdd,
     kAddw, ///< Addition word operation.
     kSub, ///< Subtraction operation.
     kSubw, ///< Subtraction word operation.

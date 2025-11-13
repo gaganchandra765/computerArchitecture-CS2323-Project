@@ -86,7 +86,7 @@ bool Parser::parse_O_GPR_C_GPR_C_I() {
       block.setRd(reg);
       reg = reg_alias_to_name.at(peekToken(3).value);
       block.setRs1(reg);
-      int64_t imm = std::stoll(peekToken(5).value);
+      int64_t imm = std::stoll(peekToken(5).value, nullptr, 0);
 
       if (instruction_set::isValidI2TypeInstruction(block.getOpcode())) {
         if (0 <= imm && imm <= 31) {
@@ -130,7 +130,7 @@ bool Parser::parse_O_GPR_C_GPR_C_I() {
       block.setRs1(reg);
       reg = reg_alias_to_name.at(peekToken(3).value);
       block.setRs2(reg);
-      int64_t imm = std::stoll(peekToken(5).value);
+      int64_t imm = std::stoll(peekToken(5).value, nullptr, 0);
       if (-4096 <= imm && imm <= 4095) {
         if (imm%4==0) {
           block.setImm(std::to_string(imm));
@@ -188,7 +188,7 @@ bool Parser::parse_O_GPR_C_I() {
     if (instruction_set::isValidUTypeInstruction(block.getOpcode())) {
       reg = reg_alias_to_name.at(peekToken(1).value);
       block.setRd(reg);
-      int64_t imm = std::stoll(peekToken(3).value);
+      int64_t imm = std::stoll(peekToken(3).value, nullptr, 0);
       if (0 <= imm && imm <= 1048575) {
         block.setImm(std::to_string(imm));
       } else {
@@ -207,7 +207,7 @@ bool Parser::parse_O_GPR_C_I() {
     } else if (instruction_set::isValidJTypeInstruction(block.getOpcode())) {
       reg = reg_alias_to_name.at(peekToken(1).value);
       block.setRd(reg);
-      int64_t imm = std::stoll(peekToken(3).value);
+      int64_t imm = std::stoll(peekToken(3).value, nullptr, 0);
       if (-1048576 <= imm && imm <= 1048575) {
         if (imm%2==0) {
           block.setImm(std::to_string(imm));
@@ -484,7 +484,7 @@ bool Parser::parse_O_GPR_C_I_LP_GPR_RP() {
     if (instruction_set::isValidITypeInstruction(block.getOpcode())) {
       reg = reg_alias_to_name.at(peekToken(1).value);
       block.setRd(reg);
-      int64_t imm = std::stoll(peekToken(3).value);
+      int64_t imm = std::stoll(peekToken(3).value, nullptr, 0);
       if (-2048 <= imm && imm <= 2047) {
         block.setImm(std::to_string(imm));
       } else {
@@ -505,7 +505,7 @@ bool Parser::parse_O_GPR_C_I_LP_GPR_RP() {
     } else if (instruction_set::isValidSTypeInstruction(block.getOpcode())) {
       reg = reg_alias_to_name.at(peekToken(1).value);
       block.setRs2(reg);
-      int64_t imm = std::stoll(peekToken(3).value);
+      int64_t imm = std::stoll(peekToken(3).value, nullptr, 0);
       if (-2048 <= imm && imm <= 2047) {
         block.setImm(std::to_string(imm));
       } else {

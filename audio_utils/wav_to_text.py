@@ -1,8 +1,7 @@
-# Save as wav_to_txt.py
 # wav file to .txt file for easier file processing . and for testing using a .s file
 import wave, struct, sys
 samples = []
-with wave.open('test.wav', 'rb') as wav:
+with wave.open('../audio_utils/test.wav', 'rb') as wav:
     n_frames = wav.getnframes()
     frames = wav.readframes(n_frames)
     if wav.getsampwidth() == 2: 

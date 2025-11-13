@@ -425,7 +425,7 @@ bool Parser::parse_O_FPR_C_I_LP_GPR_RP() {
     if (instruction_set::isValidFDITypeInstruction(block.getOpcode())) {
       reg = reg_alias_to_name.at(peekToken(1).value);
       block.setRd(reg);
-      int64_t imm = std::stoll(peekToken(3).value);
+      int64_t imm = std::stoll(peekToken(3).value, nullptr, 0);
       if (-2048 <= imm && imm <= 2047) {
         block.setImm(std::to_string(imm));
       } else {
@@ -446,7 +446,7 @@ bool Parser::parse_O_FPR_C_I_LP_GPR_RP() {
     } else if (instruction_set::isValidFDSTypeInstruction(block.getOpcode())) {
       reg = reg_alias_to_name.at(peekToken(1).value);
       block.setRs2(reg);
-      int64_t imm = std::stoll(peekToken(3).value);
+      int64_t imm = std::stoll(peekToken(3).value, nullptr, 0);
       if (-2048 <= imm && imm <= 2047) {
         block.setImm(std::to_string(imm));
       } else {
