@@ -66,6 +66,7 @@ void RVSSVM::Execute() {
   if (opcode == get_instr_encoding(Instruction::kecall).opcode && 
       funct3 == get_instr_encoding(Instruction::kecall).funct3) {
     HandleSyscall();
+    stop_requested_ = true;
     return;
   }
 
@@ -103,9 +104,14 @@ void RVSSVM::Execute() {
   }
 
   alu::AluOp aluOperation = control_unit_.GetAluSignal(current_instruction_, control_unit_.GetAluOp());
-  bool is_addr_calc = control_unit_.GetMemWrite() || control_unit_.GetMemRead() ||(opcode==get_instr_encoding(Instruction::kjalr).opcode);
+  bool is_addr_calc = control_unit_.GetMemWrite() || control_unit_.GetMemRead();
 
-  if(is_addr_calc&&aluOperation==alu::AluOp::kAdd){
+  if(opcode==get_instr_encoding(Instruction::kjalr).opcode){
+    reg1_value = ecc::adaptive_check_error(reg1_value);
+    uint64_t clean_addr = static_cast<uint64_t>(static_cast<int64_t>(static_cast<int32_t>(reg1_value & 0xFFFFFFFFULL)));
+    std::tie(execution_result_,overflow)=alu_.execute(alu::AluOp::kAddrAdd, clean_addr, reg2_value);
+  }
+  else if(is_addr_calc&&aluOperation==alu::AluOp::kAdd){
     std::tie(execution_result_, overflow) = alu_.execute(alu::AluOp::kAddrAdd, reg1_value, reg2_value);
 
   }
@@ -610,8 +616,6 @@ void RVSSVM::WriteMemory() {
       }
       case 0b010: {// SW
         addr = execution_result_;
-        // std::cout << "DEBUG: SW instruction detected. Target Addr: 0x" 
-        //           << std::hex << addr << std::dec << std::endl;
         if(addr == 0x10000000){
           uint32_t audio_sample = static_cast<uint32_t>(registers_.ReadGpr(rs2)&0xFFFFFFFF);
 
@@ -772,7 +776,11 @@ void RVSSVM::WriteBack() {
       }
       case get_instr_encoding(Instruction::kjalr).opcode: /* JALR */
       case get_instr_encoding(Instruction::kjal).opcode: /* JAL */ {
-        registers_.WriteGpr(rd, next_pc_);
+        uint32_t pointer_data =static_cast<uint32_t>(next_pc_ & 0xFFFFFFFF);
+        uint64_t protected_pointer =ecc::compute_ecc(pointer_data);
+
+        protected_pointer = ecc::update_metadata(protected_pointer,ecc::MODE_SEC,0,1,ecc::Significance::SIG_POINTER);
+        registers_.WriteGpr(rd,protected_pointer);
         break;
       }
       case get_instr_encoding(Instruction::klui).opcode: /* LUI */ {

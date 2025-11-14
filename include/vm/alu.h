@@ -66,6 +66,7 @@ enum class AluOp {
     kSIMD_div16,
     kSIMD_rem16,
     kInjectFlip,
+    kSetSig,
     kCheckError,
     // end of new instructions added
     kSll, ///< Shift left logical operation.
@@ -190,6 +191,7 @@ inline std::ostream& operator<<(std::ostream& os, const AluOp& op) {
         case AluOp::kSIMD_rem32: os << "kSIMD_rem32";break;
         case AluOp::kInjectFlip: os << "kInjectFlip";break;
         case AluOp::kCheckError: os << "kCheckError";break;
+        case AluOp::kSetSig: os << "kSetSig";break;
         
         case AluOp::kSIMD_add16: os << "kSIMD_add16";break;
         case AluOp::kSIMD_sub16: os << "kSIMD_sub16";break;

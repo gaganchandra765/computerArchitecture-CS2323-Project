@@ -129,7 +129,7 @@ namespace ecc{
         uint8_t mode = get_mode(reg_val);
         uint8_t hist =get_hist(reg_val);
         uint16_t freq = get_freq(reg_val);
-        uint8_t sens = get_sens(reg_val);
+        uint8_t sig = get_significance(reg_val);
 
 
         if(freq<1023){
@@ -150,10 +150,10 @@ namespace ecc{
         }
 
         bool high_usage =(freq>700);
-        bool high_sensitivity = (sens>=4);
+        // bool high_sensitivity = (sig>=4);
         bool recent_errors =(hist>=1);
 
-        if(high_usage||high_sensitivity||recent_errors){
+        if(high_usage||recent_errors){
             mode = MODE_SECDED;
         }
         else if(freq>300){
@@ -163,7 +163,14 @@ namespace ecc{
             mode = MODE_SEC;
         }
 
-        return update_metadata(processed_val,mode,hist,freq,sens);
+        if(sig>=ecc::Significance::SIG_CRITICAL){
+            mode = MODE_SECDED;
+        }
+        else{
+            mode = MODE_SEC;
+        }
+
+        return update_metadata(processed_val,mode,hist,freq,sig);
 
 
     }

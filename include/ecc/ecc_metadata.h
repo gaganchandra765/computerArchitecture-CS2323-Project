@@ -10,7 +10,7 @@ namespace ecc{
     // [40-41] ECC Mode
     // [42-43] Error History
     // [44-53] Frequency
-    // [54-59] Sensitiviy
+    // [54-59] Significance
     // [60-63] Reserved
 
     constexpr uint64_t DATA_ECC_MASK = 0x7FFFFFFFFULL; //[0:38]
@@ -25,17 +25,25 @@ namespace ecc{
     constexpr int FREQ_SHIFT = 44;
     constexpr uint64_t FREQ_MASK = 0x3FFULL;
 
-    constexpr int SENS_SHIFT =54;
-    constexpr uint64_t SENS_MASK = 0x3FULL;
+    constexpr int SIG_SHIFT =54;
+    constexpr uint64_t SIG_MASK = 0x3FULL;
 
 
     enum ECCMode{
         MODE_NONE = 0, //00
-        MODE_SEC = 1,//01;
+        MODE_SEC = 1,//01
         MODE_SECDED = 2 //10
 
 
     };
+
+    enum Significance : uint8_t{
+        SIG_TEMP = 0, // not important
+        SIG_DATA = 10, // for normal data
+        SIG_POINTER = 40, // for address pointers
+        SIG_CRITICAL = 63 // maximum significance
+    };
+
 
     inline uint8_t get_mode(uint64_t reg){ 
         return (reg >> MODE_SHIFT)&MODE_MASK;
@@ -46,14 +54,14 @@ namespace ecc{
     inline uint16_t get_freq(uint64_t reg){ 
         return(reg>>FREQ_SHIFT)&FREQ_MASK;
     }
-    inline uint8_t get_sens(uint64_t reg){ 
-        return(reg>>SENS_SHIFT)&SENS_MASK;
+    inline uint8_t get_significance(uint64_t reg){ 
+        return(reg>>SIG_SHIFT)&SIG_MASK;
     }
 
-    inline uint64_t update_metadata(uint64_t reg, uint8_t mode, uint8_t hist, uint16_t freq, uint8_t sens){
-        uint64_t clean_reg = reg&~((MODE_MASK<<MODE_SHIFT)|(HIST_MASK<<HIST_SHIFT)|(FREQ_MASK<<FREQ_SHIFT)|(SENS_MASK<<SENS_SHIFT));
+    inline uint64_t update_metadata(uint64_t reg, uint8_t mode, uint8_t hist, uint16_t freq, uint8_t sig){
+        uint64_t clean_reg = reg&~((MODE_MASK<<MODE_SHIFT)|(HIST_MASK<<HIST_SHIFT)|(FREQ_MASK<<FREQ_SHIFT)|(SIG_MASK<<SIG_SHIFT));
 
-        return clean_reg | (static_cast<uint64_t>(mode&MODE_MASK)<<MODE_SHIFT) | (static_cast<uint64_t>(hist&HIST_MASK)<<HIST_SHIFT) | (static_cast<uint64_t>(freq&FREQ_MASK)<<FREQ_SHIFT) | (static_cast<uint64_t>(sens&SENS_MASK)<<SENS_SHIFT);
+        return clean_reg | (static_cast<uint64_t>(mode&MODE_MASK)<<MODE_SHIFT) | (static_cast<uint64_t>(hist&HIST_MASK)<<HIST_SHIFT) | (static_cast<uint64_t>(freq&FREQ_MASK)<<FREQ_SHIFT) | (static_cast<uint64_t>(sig&SIG_MASK)<<SIG_SHIFT);
     }
 
 

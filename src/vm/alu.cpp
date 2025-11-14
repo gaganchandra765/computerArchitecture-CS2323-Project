@@ -16,6 +16,7 @@
 #include <iostream>
 #include <vector>
 #include <limits>
+#include <algorithm>
 
 namespace alu {
 
@@ -52,8 +53,13 @@ static std::string decode_fclass(uint16_t res) {
       auto sb = static_cast<int32_t>(b& 0xFFFFFFFFULL);
       int32_t result ;
       bool overflow = __builtin_add_overflow(sa, sb, &result);
+
+      uint8_t siga = ecc::get_significance(a);
+      uint8_t sigb = ecc::get_significance(b);
+      uint8_t new_sig = std::max(siga,sigb);
+
       uint64_t protected_value = ecc::compute_ecc(result);
-      protected_value = ecc::update_metadata(protected_value,ecc::MODE_SEC,0,1,1);
+      protected_value = ecc::update_metadata(protected_value,ecc::MODE_SEC,0,1,new_sig);
       return {protected_value, overflow};
     }
     case AluOp::kAddrAdd: {
@@ -97,6 +103,18 @@ static std::string decode_fclass(uint16_t res) {
       bool was_corrected = (input_val&ecc::DATA_ECC_MASK)!=(corrected_encoded&ecc::DATA_ECC_MASK);
       return { corrected_encoded, was_corrected };
     }
+    case AluOp::kSetSig: {
+      uint64_t target_reg_value = a;
+      uint8_t new_sig = static_cast<uint8_t>(b&0xFFFFFFFFULL);
+
+      uint8_t old_mode = ecc::get_mode(target_reg_value);
+      uint8_t old_hist = ecc::get_hist(target_reg_value);
+      uint16_t old_freq = ecc::get_freq(target_reg_value);
+
+      uint64_t new_value = ecc::update_metadata(target_reg_value,old_mode,old_hist,old_freq,new_sig);
+
+      return {new_value,false};
+    }
   
     case AluOp::kAddw: {
       auto sa = static_cast<int32_t>(a);
@@ -111,8 +129,12 @@ static std::string decode_fclass(uint16_t res) {
       int32_t result;
       bool overflow = __builtin_sub_overflow(sa, sb, &result);
 
+      uint8_t siga = ecc::get_significance(a);
+      uint8_t sigb = ecc::get_significance(b);
+      uint8_t new_sig = std::max(siga,sigb);
+
       uint64_t protected_value = ecc::compute_ecc(result);
-      protected_value = ecc::update_metadata(protected_value,ecc::MODE_SEC,0,1,1);
+      protected_value = ecc::update_metadata(protected_value,ecc::MODE_SEC,0,1,new_sig);
       
       return {protected_value, overflow};
     }
@@ -132,8 +154,12 @@ static std::string decode_fclass(uint16_t res) {
       int64_t full_result =static_cast<int64_t>(sa)*static_cast<int64_t>(sb);
       bool overflow = (full_result!=static_cast<int64_t>(result));
 
+      uint8_t siga = ecc::get_significance(a);
+      uint8_t sigb = ecc::get_significance(b);
+      uint8_t new_sig = std::max(siga,sigb);
+
       uint64_t protected_value = ecc::compute_ecc(result);
-      protected_value = ecc::update_metadata(protected_value,ecc::MODE_SEC,0,1,1);
+      protected_value = ecc::update_metadata(protected_value,ecc::MODE_SEC,0,1,new_sig);
 
       return {protected_value, overflow};
     }
@@ -407,8 +433,13 @@ static std::string decode_fclass(uint16_t res) {
       else{
         result = sa/sb;
       }
+
+      uint8_t siga = ecc::get_significance(a);
+      uint8_t sigb = ecc::get_significance(b);
+      uint8_t new_sig = std::max(siga,sigb);
+
       uint64_t protected_value = ecc::compute_ecc(result);
-      protected_value = ecc::update_metadata(protected_value,ecc::MODE_SEC,0,1,1);
+      protected_value = ecc::update_metadata(protected_value,ecc::MODE_SEC,0,1,new_sig);
       return {protected_value, overflow};
     }
     case AluOp::kDivw: {

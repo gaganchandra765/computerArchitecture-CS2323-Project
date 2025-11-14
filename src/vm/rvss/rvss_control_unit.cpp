@@ -219,6 +219,11 @@ alu::AluOp RVSSControlUnit::GetAluSignal(uint32_t instruction, bool ALUOp) {
                 break;
 
             }
+            case 0b0011111: {
+                return alu::AluOp::kSetSig;
+                break;
+
+            }
             }
             break;
         }
