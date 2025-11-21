@@ -86,11 +86,22 @@ endif()
 
 message(STATUS "Done")
 
-add_custom_target(clean_logs
+add_custom_target(clean_audio_logs
     COMMAND ${CMAKE_COMMAND} -E echo "Removing generated logs, wavs, and extra files created"
     COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_BINARY_DIR}/*.log
     COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_BINARY_DIR}/*.wav
     COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_BINARY_DIR}/audio_data.txt
+    COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_BINARY_DIR}/*.s
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    COMMENT "Cleaning extra generated files"
+)
+
+
+add_custom_target(clean_image_logs
+    COMMAND ${CMAKE_COMMAND} -E echo "Removing generated logs, wavs, and extra files created"
+    COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_BINARY_DIR}/*.log
+    COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_BINARY_DIR}/*.png
+    COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_BINARY_DIR}/image_data.txt
     COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_BINARY_DIR}/*.s
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Cleaning extra generated files"

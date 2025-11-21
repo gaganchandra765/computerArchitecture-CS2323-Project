@@ -106,6 +106,10 @@ class RVSSVM : public VmBase {
   void LoadAudioFile(const std::string& wav_path);
   // end of audio functions
 
+  std::vector<int32_t> image_samples_;
+  size_t image_sample_index_ = 0;
+  void LoadImageFile(const std::string& image_path);
+
 
   std::stack<StepDelta> undo_stack_;
   std::stack<StepDelta> redo_stack_;
